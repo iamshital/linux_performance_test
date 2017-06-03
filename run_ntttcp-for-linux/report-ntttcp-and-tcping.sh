@@ -41,7 +41,7 @@ function get_latency(){
         do
                 if [[ "$line" == *"Average"* ]]
                 then
-                        temp2=`echo "$line" | awk -F'=' '{print $4}' | awk -F'ms' '{print $1}'`
+                        temp2=`echo "$line" | awk -F'=' '{print $4}' | awk -F'us' '{print $1}'`
                         echo $temp2
                         average="NotEmpty"
                 fi
