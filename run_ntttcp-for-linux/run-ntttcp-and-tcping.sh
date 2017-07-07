@@ -108,6 +108,7 @@ do
 	ssh $server_username@$server_ip "pkill -f mpstat"
 	ssh $server_username@$server_ip "mpstat -P ALL 1 ${test_run_duration} > ./$log_folder/mpstat-receiver-p${num_threads_P}X${num_threads_n}.log" &
 	
+	ulimit -n 204800 
 	sleep 2
 	sar -n DEV 1 ${test_run_duration} > "./$log_folder/sar-sender-p${num_threads_P}X${num_threads_n}.log" &
 	dstat -dam > "./$log_folder/dstat-sender-p${num_threads_P}X${num_threads_n}.log" &
