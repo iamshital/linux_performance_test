@@ -97,7 +97,7 @@ do
 	ssh $server_username@$server_ip "for i in {1..$test_run_duration}; do ss -ta | grep ESTA | grep -v ssh | wc -l >> ./$log_folder/tcp-connections-p${num_threads_P}X${num_threads_n}.log; sleep 1; done" &
 
 	ssh $server_username@$server_ip "pkill -f ntttcp"
-	ssh $server_username@$server_ip "ulimit -n 204800 && ntttcp -P $num_threads_P -t ${test_run_duration} -e > ./$log_folder/ntttcp-receiver-p${num_threads_P}X${num_threads_n}.log" &
+	ssh $server_username@$server_ip "ulimit -n 20480 && ntttcp -P $num_threads_P -t ${test_run_duration} -e > ./$log_folder/ntttcp-receiver-p${num_threads_P}X${num_threads_n}.log" &
 
 	ssh $server_username@$server_ip "pkill -f lagscope"
 	ssh $server_username@$server_ip "lagscope -r" &
@@ -108,7 +108,7 @@ do
 	ssh $server_username@$server_ip "pkill -f mpstat"
 	ssh $server_username@$server_ip "mpstat -P ALL 1 ${test_run_duration} > ./$log_folder/mpstat-receiver-p${num_threads_P}X${num_threads_n}.log" &
 	
-	ulimit -n 204800 
+	ulimit -n 20480 
 	sleep 2
 	sar -n DEV 1 ${test_run_duration} > "./$log_folder/sar-sender-p${num_threads_P}X${num_threads_n}.log" &
 	dstat -dam > "./$log_folder/dstat-sender-p${num_threads_P}X${num_threads_n}.log" &
