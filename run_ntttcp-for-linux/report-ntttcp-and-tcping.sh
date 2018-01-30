@@ -3,7 +3,7 @@
 log_folder=$1
 ntttcp_log_prefix="ntttcp-sender-p"
 lagscope_log_prefix="lagscope-ntttcp-p"
-test_threads_collection=(1 2 4 8 16 32 64 128 256 512 1024 2048 4096 6144 8192 10240)
+test_threads_collection=$2
 max_server_threads=64
 result_parsed=""
 result_file="${log_folder}/report.log"
@@ -15,13 +15,24 @@ then
 fi
 
 function get_throughput(){
-	while read line
-	do
-		if [[ "$line" == *"throughput"* ]]
-		then
-			echo "$line" | awk -F'\t:' '{print $2}' | sed 's/Gbps//'
-		fi
-	done < $1
+        throuput="Empty"
+        while read line
+        do
+                if [[ "$line" == *"throughput"* ]]
+                then
+                        if [[ "$line" == *"Gbps"* ]];then
+                                temp1=`echo "$line" | awk -F'\t:' '{print $2}' | sed 's/Gbps//'`
+                        elif [[ "$line" == *"Mbps"* ]];then
+                                temp1m=`echo "$line" | awk -F'\t:' '{print $2}' | sed 's/Mbps//'`
+                                temp1=$(echo "scale=3; $temp1m/1000" | bc)
+                        fi
+                        echo $temp1
+                        throuput="NotEmpty"
+                fi
+        done < $1
+        if [ "$throuput" == "Empty" ]; then
+                echo 0
+        fi
 }
 
 function get_cyclesperbyte(){
@@ -35,13 +46,19 @@ function get_cyclesperbyte(){
 }
 
 function get_latency(){
-	while read line
-	do
-		if [[ "$line" == *"Average"* ]]
-		then
-			echo "$line" | awk -F'=' '{print $4}' | awk -F'us' '{print $1}'
-		fi
-	done < $1
+        average="Empty"
+        while read line
+        do
+                if [[ "$line" == *"Average"* ]]
+                then
+                        temp2=`echo "$line" | awk -F'=' '{print $4}' | awk -F'ms' '{print $1}'`
+                        echo $temp2
+                        average="NotEmpty"
+                fi
+        done < $1
+        if [ "$average" == "Empty" ]; then
+                echo 0
+        fi
 }
 
 echo "#test_connections	throughput_gbps	cycles/bytes	average_tcp_latency" > $result_file
