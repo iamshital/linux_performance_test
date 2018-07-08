@@ -103,4 +103,4 @@ for current_test_threads in $test_threads_collection; do
         i=$(($i + 1))
 done
 
-cat $result_file
+cat $result_file | column -t

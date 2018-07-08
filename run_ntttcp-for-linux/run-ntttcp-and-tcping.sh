@@ -53,6 +53,11 @@ function get_tx_bytes(){
                 #TX packets 223558709  bytes 15463202847 (14.4 GiB)
                 Tx_bytes=`ifconfig $eth_name| grep "TX packets"| awk '{print $5}'`
         fi
+        if [ "x$Tx_bytes" == "x" ]
+        then
+                #if ifconfig cmd not present
+                Tx_bytes=`cat /sys/class/net/$eth_name/statistics/tx_bytes`
+        fi        
         echo $Tx_bytes
 }
 
@@ -65,6 +70,11 @@ function get_tx_pkts(){
                 #TX packets 223558709  bytes 15463202847 (14.4 GiB)
                 Tx_pkts=`ifconfig $eth_name| grep "TX packets"| awk '{print $3}'`
         fi
+        if [ "x$Tx_pkts" == "x" ]
+        then
+                #if ifconfig cmd not present
+                Tx_pkts=`cat /sys/class/net/$eth_name/statistics/tx_packets`
+        fi        
         echo $Tx_pkts
 }
 
@@ -109,13 +119,12 @@ for current_test_threads in $test_threads_collection; do
         ssh $server_username@$server_ip "pkill -f mpstat"
         ssh $server_username@$server_ip "mpstat -P ALL 1 ${test_run_duration} > ./$log_folder/mpstat-receiver-p${num_threads_P}X${num_threads_n}.log" &
 
-        ulimit -n 204800
         sleep 2
         sar -n DEV 1 ${test_run_duration} > "./$log_folder/sar-sender-p${num_threads_P}X${num_threads_n}.log" &
         dstat -dam > "./$log_folder/dstat-sender-p${num_threads_P}X${num_threads_n}.log" &
         mpstat -P ALL 1 ${test_run_duration} > "./$log_folder/mpstat-sender-p${num_threads_P}X${num_threads_n}.log" &
         lagscope -s$server_ip -t ${test_run_duration} -V > "./$log_folder/lagscope-ntttcp-p${num_threads_P}X${num_threads_n}.log" &
-        ntttcp -s${server_ip} -P $num_threads_P -n $num_threads_n -t ${test_run_duration}  > "./$log_folder/ntttcp-sender-p${num_threads_P}X${num_threads_n}.log"
+        ulimit -n 204800 && ntttcp -s${server_ip} -P $num_threads_P -n $num_threads_n -t ${test_run_duration}  > "./$log_folder/ntttcp-sender-p${num_threads_P}X${num_threads_n}.log"
 
         current_tx_bytes=$(get_tx_bytes)
         current_tx_pkts=$(get_tx_pkts)
